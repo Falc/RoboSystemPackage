@@ -85,6 +85,7 @@ $installTask = $this->taskPackageInstall()
 
 $this->taskSshExec('remote.example.com')
     ->remoteDir('/home/user')
+    ->printed(false) // Do not display output
     ->exec($installTask)
     ->run();
 ```
@@ -133,6 +134,7 @@ $uninstallTask = $this->taskPackageUninstall()
 
 $this->taskSshExec('remote.example.com')
     ->remoteDir('/home/user')
+    ->printed(false) // Do not display output
     ->exec($uninstallTask)
     ->run();
 ```
@@ -193,6 +195,7 @@ $updateTask = $this->taskPackageUpdate()
 
 $this->taskSshExec('remote.example.com')
     ->remoteDir('/home/user')
+    ->printed(false) // Do not display output
     ->exec($updateTask)
     ->run();
 ```
