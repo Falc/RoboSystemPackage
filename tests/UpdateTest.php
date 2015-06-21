@@ -9,121 +9,171 @@
 
 namespace Falc\Robo\Package\Test;
 
-use Falc\Robo\Package\Uninstall;
+use Falc\Robo\Package\Test\BaseTestCase;
+use Falc\Robo\Package\Update;
+use Robo\Result;
 
 /**
  * Update tests.
  */
 class UpdateTest extends BaseTestCase
 {
+    protected $builder;
+    protected $factory;
+
+    protected function setUp()
+    {
+        $this->builder = $this->createCommandBuilderMock();
+        $this->factory = $this->createFactoryMock($this->builder);
+    }
+
     public function testWithoutPackageManager()
     {
-        $task = $this->taskPackageUpdate();
-
         $this->setExpectedException('\Exception');
-        $command = $task->getCommand();
+
+        $task = $this->taskPackageUpdate(null, [], $this->factory)
+            ->getCommand();
     }
 
-    public function testUnsupportedPackageManager()
+    public function testWithoutPackages()
     {
-        $this->setExpectedException('\Exception');
-        $task = $this->taskPackageUpdate('awesomepackagemanager');
+        // It must call update() without packages
+        $this->builder
+            ->expects($this->once())
+            ->method('update')
+            ->with($this->equalTo([]));
+
+        // It must call assumeYes() since it is a default option
+        $this->builder
+            ->expects($this->once())
+            ->method('assumeYes');
+
+        $this->taskPackageUpdate(null, [], $this->factory)
+            ->packageManager('mypackagemanager')
+            ->getCommand();
     }
 
-    public function testApt()
+    public function testWithSinglePackage()
     {
-        $task = $this->taskPackageUpdate()
-            ->packageManager('apt')
-            ->packages(['package1', 'package2']);
+        $package = 'package1';
 
-        $command = $task->getCommand();
-        $expected = 'apt-get -y -qq install --only-upgrade package1 package2';
-        $this->assertEquals($expected, $command);
+        // It must call update() with only one package
+        $this->builder
+            ->expects($this->once())
+            ->method('update')
+            ->with($this->equalTo([$package]));
+
+        // It must call assumeYes() since it is a default option
+        $this->builder
+            ->expects($this->once())
+            ->method('assumeYes');
+
+        $this->taskPackageUpdate(null, [], $this->factory)
+            ->packageManager('mypackagemanager')
+            ->package($package)
+            ->getCommand();
     }
 
-    public function testAptUpdateAll()
+    public function testWithManyPackages()
     {
-        $task = $this->taskPackageUpdate('apt');
+        $packages = ['package1', 'package2'];
 
-        $command = $task->getCommand();
-        $expected = 'apt-get -y -qq upgrade';
-        $this->assertEquals($expected, $command);
+        // It must call update() with the specified packages
+        $this->builder
+            ->expects($this->once())
+            ->method('update')
+            ->with($this->equalTo($packages));
+
+        // It must call assumeYes() since it is a default option
+        $this->builder
+            ->expects($this->once())
+            ->method('assumeYes');
+
+        $this->taskPackageUpdate(null, [], $this->factory)
+            ->packageManager('mypackagemanager')
+            ->packages($packages)
+            ->getCommand();
     }
 
-    public function testDnf()
+    public function testQuiet()
     {
-        $task = $this->taskPackageUpdate()
-            ->packageManager('dnf')
-            ->packages(['package1', 'package2']);
+        // It must call update()
+        $this->builder
+            ->expects($this->once())
+            ->method('update');
 
-        $command = $task->getCommand();
-        $expected = 'dnf -y -q update package1 package2';
-        $this->assertEquals($expected, $command);
-    }
+        // It must call assumeYes() since it is a default option
+        $this->builder
+            ->expects($this->once())
+            ->method('assumeYes');
 
-    public function testDnfUpdateAll()
-    {
-        $task = $this->taskPackageUpdate('dnf');
+        // It must call quiet()
+        $this->builder
+            ->expects($this->once())
+            ->method('quiet');
 
-        $command = $task->getCommand();
-        $expected = 'dnf -y -q update';
-        $this->assertEquals($expected, $command);
-    }
-
-    public function testYum()
-    {
-        $task = $this->taskPackageUpdate()
-            ->packageManager('yum')
-            ->packages(['package1', 'package2']);
-
-        $command = $task->getCommand();
-        $expected = 'yum -y -q update package1 package2';
-        $this->assertEquals($expected, $command);
-    }
-
-    public function testYumUpdateAll()
-    {
-        $task = $this->taskPackageUpdate('yum');
-
-        $command = $task->getCommand();
-        $expected = 'yum -y -q update';
-        $this->assertEquals($expected, $command);
+        $this->taskPackageUpdate(null, [], $this->factory)
+            ->packageManager('mypackagemanager')
+            ->getCommand();
     }
 
     public function testVerbose()
     {
-        $task = $this->taskPackageUpdate()
-            ->packageManager('yum')
-            ->packages(['package1', 'package2'])
-            ->verbose();
+        // It must call update()
+        $this->builder
+            ->expects($this->once())
+            ->method('update');
 
-        $command = $task->getCommand();
-        $expected = 'yum -y update package1 package2';
-        $this->assertEquals($expected, $command);
+        // It must call assumeYes() since it is a default option
+        $this->builder
+            ->expects($this->once())
+            ->method('assumeYes');
+
+        // It must NOT call quiet()
+        $this->builder
+            ->expects($this->never())
+            ->method('quiet');
+
+        $this->taskPackageUpdate(null, [], $this->factory)
+            ->packageManager('mypackagemanager')
+            ->verbose()
+            ->getCommand();
     }
 
     public function testOneLiner()
     {
-        $task1 = $this->taskPackageUpdate('yum', ['package1', 'package2']);
+        $packages = ['package1', 'package2'];
 
-        $task2 = $this->taskPackageUpdate()
-            ->packageManager('yum')
-            ->packages(['package1', 'package2']);
+        // It must call update() with the specified packages
+        $this->builder
+            ->expects($this->once())
+            ->method('update')
+            ->with($this->equalTo($packages));
 
-        $this->assertEquals($task1->getCommand(), $task2->getCommand());
+        // It must call assumeYes() since it is a default option
+        $this->builder
+            ->expects($this->once())
+            ->method('assumeYes');
+
+        $this->taskPackageUpdate('mypackagemanager', $packages, $this->factory)->getCommand();
     }
 
     public function testRun()
     {
-        $task = $this->createTaskMock('Falc\Robo\Package\Update', ['executeCommand']);
+        // Task mock
+        $task = $this->getMockBuilder('Falc\Robo\Package\Update')
+            ->setConstructorArgs([null, [], $this->factory])
+            ->setMethods(['executeCommand'])
+            ->getMock();
 
+        // It must call executeCommand()
         $task
             ->expects($this->once())
             ->method('executeCommand')
-            ->will($this->returnValue(\Robo\Result::success($task, 'Success')));
+            ->will($this->returnValue(Result::success($task, 'Success')));
 
         $task
-            ->packageManager('yum')
+            ->packageManager('mypackagemanager')
             ->package('package1')
             ->run();
     }

@@ -9,7 +9,7 @@
 
 namespace Falc\Robo\Package;
 
-use Robo\Common\ExecOneCommand;
+use Falc\Robo\Package\BaseTask;
 use Robo\Contract\CommandInterface;
 
 /**
@@ -54,47 +54,19 @@ class Update extends BaseTask implements CommandInterface
      */
     public function getCommand()
     {
-        if ($this->packageManager === null) {
+        if ($this->builder === null) {
             throw new \Exception('Package manager not defined');
         }
 
-        switch ($this->packageManager) {
-            case 'apt':
-                $command = 'apt-get';
-                $action = empty($this->packages) ? 'upgrade' : 'install --only-upgrade';
-                $assumeYes = '-y';
-                $quiet = '-qq';
-                break;
-            case 'dnf':
-                $command = 'dnf';
-                $action = 'update';
-                $assumeYes = '-y';
-                $quiet = '-q';
-                break;
-            case 'yum':
-                $command = 'yum';
-                $action = 'update';
-                $assumeYes = '-y';
-                $quiet = '-q';
-                break;
-        }
-
-        $this->options[] = $assumeYes;
+        $this->builder->update($this->packages)->assumeYes();
 
         if (!$this->verbose) {
-            $this->options[] = $quiet;
+            $this->builder->quiet();
         }
 
-        $options = implode(' ', $this->options);
+        $this->command = $this->builder->getCommand();
 
-        $this->command = "{$command} {$options} {$action}";
-
-        if (empty($this->packages)) {
-            return $this->command;
-        }
-
-        $packages = implode(' ', array_unique($this->packages));
-        return "{$this->command} {$packages}";
+        return $this->command;
     }
 
     /**

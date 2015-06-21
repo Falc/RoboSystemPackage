@@ -18,11 +18,44 @@ class BaseTestCase extends \PHPUnit_Framework_TestCase
 {
     use Package\loadTasks;
 
-    protected function createTaskMock($class, array $stubMethods = [])
+    protected function createCommandBuilderMock()
     {
-        $mock = $this->getMockBuilder($class)
-            ->setMethods($stubMethods)
+        $mock = $this->getMockBuilder('Falc\Robo\Package\CommandBuilder\CommandBuilderInterface')
+            ->setMethods(['install', 'update', 'uninstall', 'assumeYes', 'quiet', 'getCommand'])
             ->getMock();
+
+        $mock
+            ->method('install')
+            ->will($this->returnValue($mock));
+
+        $mock
+            ->method('update')
+            ->will($this->returnValue($mock));
+
+        $mock
+            ->method('uninstall')
+            ->will($this->returnValue($mock));
+
+        $mock
+            ->method('assumeYes')
+            ->will($this->returnValue($mock));
+
+        $mock
+            ->method('quiet')
+            ->will($this->returnValue($mock));
+
+        return $mock;
+    }
+
+    protected function createFactoryMock($builder)
+    {
+        $mock = $this->getMockBuilder('Falc\Robo\Package\Factory\CommandBuilderFactory')
+            ->setMethods(['create'])
+            ->getMock();
+
+        $mock
+            ->method('create')
+            ->will($this->returnValue($builder));
 
         return $mock;
     }

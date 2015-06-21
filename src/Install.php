@@ -9,7 +9,7 @@
 
 namespace Falc\Robo\Package;
 
-use Robo\Common\ExecOneCommand;
+use Falc\Robo\Package\BaseTask;
 use Robo\Contract\CommandInterface;
 
 /**
@@ -54,47 +54,19 @@ class Install extends BaseTask implements CommandInterface
      */
     public function getCommand()
     {
-        if ($this->packageManager === null) {
+        if ($this->builder === null) {
             throw new \Exception('Package manager not defined');
         }
 
-        if (empty($this->packages)) {
-            throw new \Exception('No packages selected to be installed');
-        }
-
-        switch ($this->packageManager) {
-            case 'apt':
-                $command = 'apt-get';
-                $action = 'install';
-                $assumeYes = '-y';
-                $quiet = '-qq';
-                break;
-            case 'dnf':
-                $command = 'dnf';
-                $action = 'install';
-                $assumeYes = '-y';
-                $quiet = '-q';
-                break;
-            case 'yum':
-                $command = 'yum';
-                $action = 'install';
-                $assumeYes = '-y';
-                $quiet = '-q';
-                break;
-        }
-
-        $this->options[] = $assumeYes;
+        $this->builder->install($this->packages)->assumeYes();
 
         if (!$this->verbose) {
-            $this->options[] = $quiet;
+            $this->builder->quiet();
         }
 
-        $options = implode(' ', $this->options);
+        $this->command = $this->builder->getCommand();
 
-        $this->command = "{$command} {$options} {$action}";
-
-        $packages = implode(' ', array_unique($this->packages));
-        return "{$this->command} {$packages}";
+        return $this->command;
     }
 
     /**

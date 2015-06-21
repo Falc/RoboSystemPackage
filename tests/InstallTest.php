@@ -10,101 +10,170 @@
 namespace Falc\Robo\Package\Test;
 
 use Falc\Robo\Package\Install;
+use Falc\Robo\Package\Test\BaseTestCase;
+use Robo\Result;
 
 /**
  * Install tests.
  */
 class InstallTest extends BaseTestCase
 {
-    public function testWithoutPackageManager()
-    {
-        $task = $this->taskPackageInstall();
+    protected $builder;
+    protected $factory;
 
-        $this->setExpectedException('\Exception');
-        $command = $task->getCommand();
+    protected function setUp()
+    {
+        $this->builder = $this->createCommandBuilderMock();
+        $this->factory = $this->createFactoryMock($this->builder);
     }
 
-    public function testUnsupportedPackageManager()
+    public function testWithoutPackageManager()
     {
         $this->setExpectedException('\Exception');
-        $task = $this->taskPackageInstall('awesomepackagemanager');
+
+        $task = $this->taskPackageInstall(null, [], $this->factory)
+            ->getCommand();
     }
 
     public function testWithoutPackages()
     {
-        $task = $this->taskPackageInstall('yum');
+        // It must call install() without packages
+        $this->builder
+            ->expects($this->once())
+            ->method('install')
+            ->with($this->equalTo([]));
 
-        $this->setExpectedException('\Exception');
-        $command = $task->getCommand();
+        // It must call assumeYes() since it is a default option
+        $this->builder
+            ->expects($this->once())
+            ->method('assumeYes');
+
+        $this->taskPackageInstall(null, [], $this->factory)
+            ->packageManager('mypackagemanager')
+            ->getCommand();
     }
 
-    public function testApt()
+    public function testWithSinglePackage()
     {
-        $task = $this->taskPackageInstall()
-            ->packageManager('apt')
-            ->packages(['package1', 'package2']);
+        $package = 'package1';
 
-        $command = $task->getCommand();
-        $expected = 'apt-get -y -qq install package1 package2';
-        $this->assertEquals($expected, $command);
+        // It must call install() with only one package
+        $this->builder
+            ->expects($this->once())
+            ->method('install')
+            ->with($this->equalTo([$package]));
+
+        // It must call assumeYes() since it is a default option
+        $this->builder
+            ->expects($this->once())
+            ->method('assumeYes');
+
+        $this->taskPackageInstall(null, [], $this->factory)
+            ->packageManager('mypackagemanager')
+            ->package($package)
+            ->getCommand();
     }
 
-    public function testDnf()
+    public function testWithManyPackages()
     {
-        $task = $this->taskPackageInstall()
-            ->packageManager('dnf')
-            ->packages(['package1', 'package2']);
+        $packages = ['package1', 'package2'];
 
-        $command = $task->getCommand();
-        $expected = 'dnf -y -q install package1 package2';
-        $this->assertEquals($expected, $command);
+        // It must call install() with the specified packages
+        $this->builder
+            ->expects($this->once())
+            ->method('install')
+            ->with($this->equalTo($packages));
+
+        // It must call assumeYes() since it is a default option
+        $this->builder
+            ->expects($this->once())
+            ->method('assumeYes');
+
+        $this->taskPackageInstall(null, [], $this->factory)
+            ->packageManager('mypackagemanager')
+            ->packages($packages)
+            ->getCommand();
     }
 
-    public function testYum()
+    public function testQuiet()
     {
-        $task = $this->taskPackageInstall()
-            ->packageManager('yum')
-            ->packages(['package1', 'package2']);
+        // It must call install()
+        $this->builder
+            ->expects($this->once())
+            ->method('install');
 
-        $command = $task->getCommand();
-        $expected = 'yum -y -q install package1 package2';
-        $this->assertEquals($expected, $command);
+        // It must call assumeYes() since it is a default option
+        $this->builder
+            ->expects($this->once())
+            ->method('assumeYes');
+
+        // It must call quiet()
+        $this->builder
+            ->expects($this->once())
+            ->method('quiet');
+
+        $this->taskPackageInstall(null, [], $this->factory)
+            ->packageManager('mypackagemanager')
+            ->getCommand();
     }
 
     public function testVerbose()
     {
-        $task = $this->taskPackageInstall()
-            ->packageManager('yum')
-            ->packages(['package1', 'package2'])
-            ->verbose();
+        // It must call install()
+        $this->builder
+            ->expects($this->once())
+            ->method('install');
 
-        $command = $task->getCommand();
-        $expected = 'yum -y install package1 package2';
-        $this->assertEquals($expected, $command);
+        // It must call assumeYes() since it is a default option
+        $this->builder
+            ->expects($this->once())
+            ->method('assumeYes');
+
+        // It must NOT call quiet()
+        $this->builder
+            ->expects($this->never())
+            ->method('quiet');
+
+        $this->taskPackageInstall(null, [], $this->factory)
+            ->packageManager('mypackagemanager')
+            ->verbose()
+            ->getCommand();
     }
 
     public function testOneLiner()
     {
-        $task1 = $this->taskPackageInstall('yum', ['package1', 'package2']);
+        $packages = ['package1', 'package2'];
 
-        $task2 = $this->taskPackageInstall()
-            ->packageManager('yum')
-            ->packages(['package1', 'package2']);
+        // It must call install() with the specified packages
+        $this->builder
+            ->expects($this->once())
+            ->method('install')
+            ->with($this->equalTo($packages));
 
-        $this->assertEquals($task1->getCommand(), $task2->getCommand());
+        // It must call assumeYes() since it is a default option
+        $this->builder
+            ->expects($this->once())
+            ->method('assumeYes');
+
+        $this->taskPackageInstall('mypackagemanager', $packages, $this->factory)->getCommand();
     }
 
     public function testRun()
     {
-        $task = $this->createTaskMock('Falc\Robo\Package\Install', ['executeCommand']);
+        // Task mock
+        $task = $this->getMockBuilder('Falc\Robo\Package\Install')
+            ->setConstructorArgs([null, [], $this->factory])
+            ->setMethods(['executeCommand'])
+            ->getMock();
 
+        // It must call executeCommand()
         $task
             ->expects($this->once())
             ->method('executeCommand')
-            ->will($this->returnValue(\Robo\Result::success($task, 'Success')));
+            ->will($this->returnValue(Result::success($task, 'Success')));
 
         $task
-            ->packageManager('yum')
+            ->packageManager('mypackagemanager')
             ->package('package1')
             ->run();
     }

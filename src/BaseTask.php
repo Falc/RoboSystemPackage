@@ -9,8 +9,9 @@
 
 namespace Falc\Robo\Package;
 
+use Falc\Robo\Package\Factory\CommandBuilderFactory;
+use Falc\Robo\Package\Factory\CommandBuilderFactoryInterface;
 use Robo\Common\ExecOneCommand;
-use Robo\Contract\CommandInterface;
 use Robo\Task\BaseTask as RoboBaseTask;
 
 /**
@@ -19,13 +20,6 @@ use Robo\Task\BaseTask as RoboBaseTask;
 abstract class BaseTask extends RoboBaseTask
 {
     use ExecOneCommand;
-
-    /**
-     * Package manager to use.
-     *
-     * @var string
-     */
-    protected $packageManager;
 
     /**
      * Package list.
@@ -49,13 +43,30 @@ abstract class BaseTask extends RoboBaseTask
     protected $verbose = false;
 
     /**
+     * CommandBuilder factory.
+     *
+     * @var CommandBuilderFactoryInterface
+     */
+    protected $factory;
+
+    /**
+     * CommandBuilder.
+     *
+     * @var \Falc\Robo\Package\CommandBuilder\CommandBuilderInterface
+     */
+    protected $builder;
+
+    /**
      * Constructor.
      *
-     * @param   string      $packageManager Package manager to use. Optional.
-     * @param   string[]    $packages       Package list. Optional.
+     * @param   string                          $packageManager Package manager to use. Optional.
+     * @param   string[]                        $packages       Package list. Optional.
+     * @param   CommandBuilderFactoryInterface  $factory        CommandBuilder factory. Optional.
      */
-    public function __construct($packageManager = null, array $packages = [])
+    public function __construct($packageManager = null, array $packages = [], CommandBuilderFactoryInterface $factory = null)
     {
+        $this->factory = $factory ?: new CommandBuilderFactory();
+
         if ($packageManager) {
             $this->packageManager($packageManager);
         }
@@ -77,13 +88,7 @@ abstract class BaseTask extends RoboBaseTask
      */
     public function packageManager($packageManager)
     {
-        $packageManager = strtolower($packageManager);
-
-        if (!$this->isPackageManagerSupported($packageManager)) {
-            throw new \Exception("{$packageManager} is not supported");
-        }
-
-        $this->packageManager = $packageManager;
+        $this->builder = $this->factory->create(strtolower($packageManager));
 
         return $this;
     }
@@ -126,16 +131,5 @@ abstract class BaseTask extends RoboBaseTask
         $this->verbose = true;
 
         return $this;
-    }
-
-    /**
-     * Tells whether a package manager is supported or not.
-     *
-     * @param   string  $packageManager Package manager.
-     * @return  boolean
-     */
-    protected function isPackageManagerSupported($packageManager)
-    {
-        return in_array($packageManager, ['apt', 'dnf', 'yum']);
     }
 }
