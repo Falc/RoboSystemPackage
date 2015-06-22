@@ -1,8 +1,11 @@
 # Robo System Package Tasks
 
-Collection of tasks for interacting with system package managers.
+[![License](https://img.shields.io/packagist/l/falc/robo-system-package.svg?style=flat-square)](LICENSE.md)
+[![Build Status](https://img.shields.io/travis/Falc/RoboSystemPackage.svg?style=flat-square)](https://travis-ci.org/Falc/RoboSystemPackage)
+[![Coverage Status](https://img.shields.io/scrutinizer/coverage/g/Falc/RoboSystemPackage.svg?style=flat-square)](https://scrutinizer-ci.com/g/Falc/RoboSystemPackage/)
+[![Quality Score](https://img.shields.io/scrutinizer/g/Falc/RoboSystemPackage.svg?style=flat-square)](https://scrutinizer-ci.com/g/Falc/RoboSystemPackage/)
 
-License: [MIT](https://github.com/Falc/RoboSystemPackage/blob/master/LICENSE)
+Collection of tasks for interacting with system package managers.
 
 ## Requirements
 
