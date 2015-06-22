@@ -67,7 +67,7 @@ abstract class BaseTask extends RoboBaseTask
     {
         $this->factory = $factory ?: new CommandBuilderFactory();
 
-        if ($packageManager) {
+        if ($packageManager !== null) {
             $this->packageManager($packageManager);
         }
 
