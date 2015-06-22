@@ -55,9 +55,7 @@ class Uninstall extends BaseTask implements CommandInterface
             $this->builder->quiet();
         }
 
-        $this->command = $this->builder->getCommand();
-
-        return $this->command;
+        return $this->builder->getCommand();
     }
 
     /**
