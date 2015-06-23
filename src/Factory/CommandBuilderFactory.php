@@ -27,6 +27,8 @@ class CommandBuilderFactory implements CommandBuilderFactoryInterface
                 return new CommandBuilder\AptCommandBuilder();
             case 'dnf':
                 return new CommandBuilder\DnfCommandBuilder();
+            case 'pacman':
+                return new CommandBuilder\PacmanCommandBuilder();
             case 'yum':
                 return new CommandBuilder\YumCommandBuilder();
             default:

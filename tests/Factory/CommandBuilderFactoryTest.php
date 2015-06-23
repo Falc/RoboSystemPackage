@@ -44,6 +44,13 @@ class CommandBuilderFactoryTest extends BaseTestCase
         $this->assertInstanceOf('Falc\Robo\Package\CommandBuilder\CommandBuilderInterface', $builder);
     }
 
+    public function testCreatePacmanCommandBuilder()
+    {
+        $builder = $this->factory->create('pacman');
+
+        $this->assertInstanceOf('Falc\Robo\Package\CommandBuilder\CommandBuilderInterface', $builder);
+    }
+
     public function testCreateYumCommandBuilder()
     {
         $builder = $this->factory->create('yum');
