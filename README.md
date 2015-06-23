@@ -216,6 +216,7 @@ All the tasks implement these methods:
 Every task requires to set a package manager either in the constructor or using the `packageManager($packageManager)` method.
 
 At the moment these are the supported package managers:
-* apt
-* dnf
-* yum
+* [apt](https://wiki.debian.org/Apt)
+* [dnf](http://dnf.readthedocs.org/)
+* [pacman](https://wiki.archlinux.org/index.php/Pacman)
+* [yum](https://fedoraproject.org/wiki/Yum)
