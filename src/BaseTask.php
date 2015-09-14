@@ -29,13 +29,6 @@ abstract class BaseTask extends RoboBaseTask
     protected $packages;
 
     /**
-     * Option list.
-     *
-     * @var string[]
-     */
-    protected $options;
-
-    /**
      * Whether verbose mode is enabled or not.
      *
      * @var boolean
@@ -70,8 +63,6 @@ abstract class BaseTask extends RoboBaseTask
         if ($packageManager !== null) {
             $this->packageManager($packageManager);
         }
-
-        $this->options = [];
 
         $this->packages = [];
 
