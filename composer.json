@@ -1,7 +1,7 @@
 {
     "name": "falc/robo-system-package",
     "description": "Robo tasks related to system package management.",
-    "keywords": ["robo", "task", "system", "packages"],
+    "keywords": ["robo", "task", "system", "packages", "apt", "dnf", "pacman", "yum"],
     "license": "MIT",
     "authors": [
         {
