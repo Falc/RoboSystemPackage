@@ -9,7 +9,6 @@
 
 namespace Falc\Robo\Package;
 
-use Falc\Robo\Package\BaseTask;
 use Robo\Contract\CommandInterface;
 
 /**

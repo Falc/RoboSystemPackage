@@ -9,8 +9,6 @@
 
 namespace Falc\Robo\Package\CommandBuilder;
 
-use Falc\Robo\Package\CommandBuilder\CommandBuilderInterface;
-
 /**
  * Apt command builder.
  */
